@@ -100,3 +100,7 @@ components (and will have bundles created in the fallback `bundled` build).
     * polymer init
 * Verify .gitignore before initial (2nd) commit
     * ignore directories build, bower_components, and node_modules
+* Initialize firebase hosting
+    * firebase login --no-localhost
+    * firebase init
+* Connect Google domain from firebase hosting console
