@@ -1,7 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
-<link rel="import" href="../bower_components/google-map/google-map.html">
-<link rel="import" href="../bower_components/google-map/google-map-marker.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="nom-noms-add-place">
@@ -34,21 +32,14 @@
       #input:focus {
         border-color: #4d90fe;
       }
+      #gmap {
+        height: 100%;
+      }
     </style>
-    <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></google-maps-api>
+    <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
     <div id="content">
       <input id="input" class="controls" type="text" placeholder="Search Box">
-      <google-map map="{{map}}" latitude="34.0223405" longitude="-118.4377895" zoom="14" fit-to-markers disable-default-ui
-                  api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-google-map-ready="apiLoaded" singleInfoWindow>
-        <template is="dom-repeat" items="{{markers}}" as="marker">
-          <google-map-marker latitude="{{marker.latitude}}"
-                             longitude="{{marker.longitude}}">
-            <div>{{marker.name}}</div>
-            <div>{{marker.place_id}}</div>
-            <div>{{marker.formatted_address}}</div>
-          </google-map-marker>
-        </template>
-      </google-map>
+      <div id="gmap"></div>
     </div>
   </template>
   <script>
@@ -61,8 +52,20 @@
           type: Array,
           value: function() { return []; },
         },
+        markerListeners: {
+          type: Array,
+          value: function() { return []; },
+        },
       },
+      
+      // Set up the map
       apiLoaded: function() {
+        this.map = new this.$.gmaps.api.Map(this.$.gmap, {
+          center: {lat: 34.0223405, lng: -118.4377895},
+          zoom: 14,
+          //fit-to-markers disable-default-ui single-info-window
+        });
+        
         // Create the search box and link it to the UI element.
         var searchBox = new this.$.gmaps.api.places.SearchBox(this.$.input);
         this.map.controls[this.$.gmaps.api.ControlPosition.TOP_RIGHT].push(this.$.input);
@@ -74,12 +77,34 @@
 
         // Listen for the event fired when the user selects a prediction
         searchBox.addListener('places_changed', function() {
+          // remove all current markers & listeners
+          for (var i = 0; i < this.markers.length; ++i) {
+            this.markerListeners[i].remove();
+            this.markers[i].setMap(null);
+          }
+          this.markerListeners = [];
+          
+          // create new markers
           this.markers = searchBox.getPlaces().map(function(result) {
-            // obtain lat/long from geometry
-            result.latitude  = result.geometry.location.lat();
-            result.longitude = result.geometry.location.lng();
-            return result;
-          });
+            // create info window for marker
+            var infoWindow = new this.$.gmaps.api.InfoWindow({
+              content: result.place_id + '<br>' + result.formatted_address,
+            });
+            // create marker
+            var marker = new this.$.gmaps.api.Marker({
+              position: {lat: result.geometry.location.lat(), lng: result.geometry.location.lng()},
+              map: this.map,
+              title: result.name,
+              animation: this.$.gmaps.api.Animation.DROP,
+            });
+            // open infoWindow on marker click
+            var listener = marker.addListener('click', function() {
+              infoWindow.open(this.map, marker);
+            }.bind(this));
+            this.markerListeners.push(listener);
+            // return marker (adding it to collection)
+            return marker;
+          }.bind(this));
         }.bind(this));
       },
     });
