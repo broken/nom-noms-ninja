@@ -5,6 +5,7 @@
     "src/nom-noms-view1.html",
     "src/nom-noms-view2.html",
     "src/nom-noms-view3.html",
+    "src/nom-noms-view4.html",
     "src/nom-noms-404.html"
   ],
   "sourceGlobs": [
