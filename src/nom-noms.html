@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="nom-noms-icons.html">
 
 <dom-module id="nom-noms">
@@ -61,6 +62,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     </style>
+    <firebase-app auth-domain="nom-noms-ninja.firebaseapp.com"
+                  database-url="https://nom-noms-ninja.firebaseio.com"
+                  api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></firebase-app>
 
     <app-location route="{{route}}"></app-location>
     <app-route

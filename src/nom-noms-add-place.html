@@ -3,7 +3,6 @@
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="shared-styles.html">
@@ -48,9 +47,6 @@
         color: blueviolet;
       }
     </style>
-    <firebase-app auth-domain="nom-noms-ninja.firebaseapp.com"
-                  database-url="https://nom-noms-ninja.firebaseio.com"
-                  api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></firebase-app>
     <firebase-auth id="auth" user="{{user}}" provider="google"></firebase-auth>
     <firebase-document path="/users/[[user.uid]]/locations/[[locationId]]" data="[[locationData]]"></firebase-document>
     <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
