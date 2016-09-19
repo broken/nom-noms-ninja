@@ -106,8 +106,17 @@
           }
           this.markerListeners = [];
           
+          // used for setting bounds around new markers
+          var bounds = new this.$.gmaps.api.LatLngBounds();
+          
           // create new markers
           this.markers = searchBox.getPlaces().map(function(result) {
+            // set bounds to include result
+            if (result.geometry.viewport) {  // Only geocodes have viewport.
+              bounds.union(result.geometry.viewport);
+            } else {
+              bounds.extend(result.geometry.location);
+            }
             // create info window for marker
             var infoWindow = new this.$.gmaps.api.InfoWindow({
               content: result.name,
@@ -132,6 +141,9 @@
             // return marker (adding it to collection)
             return marker;
           }.bind(this));
+          
+          // Fit map around marker 
+          this.map.fitBounds(bounds);
         }.bind(this));
       },
     });
