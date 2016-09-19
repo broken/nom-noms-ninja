@@ -1,5 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="nom-noms-add-place">
@@ -36,8 +39,14 @@
         height: 100%;
       }
     </style>
+    <firebase-app auth-domain="nom-noms-ninja.firebaseapp.com"
+                  database-url="https://nom-noms-ninja.firebaseio.com"
+                  api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></firebase-app>
+    <firebase-auth id="auth" user="{{user}}" provider="google"></firebase-auth>
+    <firebase-document path="/users/{{user.uid}}/locations/{{locationId}}" data="{{locationData}}"></firebase-document>
     <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
     <div id="content">
+      <button label="login" on-click="loginr">redirect login</button>
       <input id="input" class="controls" type="text" placeholder="Search Box">
       <div id="gmap"></div>
     </div>
@@ -48,6 +57,7 @@
       is: 'nom-noms-add-place',
       properties: {
         map: Object,
+        user: Object,
         markers: {
           type: Array,
           value: function() { return []; },
@@ -57,7 +67,19 @@
           value: function() { return []; },
         },
       },
-      
+
+      loginr: function() {
+        this.$.auth.signInWithRedirect()
+            .then(function(response) {
+              // optionally handle a successful login
+              console.log(response);
+            })
+            .catch(function(error) {
+              // unsuccessful authentication response here
+              console.log(error);
+            });
+      },
+
       // Set up the map
       apiLoaded: function() {
         this.map = new this.$.gmaps.api.Map(this.$.gmap, {
@@ -88,7 +110,7 @@
           this.markers = searchBox.getPlaces().map(function(result) {
             // create info window for marker
             var infoWindow = new this.$.gmaps.api.InfoWindow({
-              content: result.place_id + '<br>' + result.formatted_address,
+              content: result.name,
             });
             // create marker
             var marker = new this.$.gmaps.api.Marker({
@@ -100,6 +122,11 @@
             // open infoWindow on marker click
             var listener = marker.addListener('click', function() {
               infoWindow.open(this.map, marker);
+              this.locationId = result.place_id;
+              this.locationData = {
+                name: result.name,
+                pos: {lat: result.geometry.location.lat(), lng: result.geometry.location.lng()},
+              };
             }.bind(this));
             this.markerListeners.push(listener);
             // return marker (adding it to collection)
