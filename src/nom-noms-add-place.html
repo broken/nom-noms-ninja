@@ -1,5 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
@@ -38,18 +41,37 @@
       #gmap {
         height: 100%;
       }
+      paper-button {
+        margin: 0 6px;
+      }
+      paper-icon-button[active] {
+        color: blueviolet;
+      }
     </style>
     <firebase-app auth-domain="nom-noms-ninja.firebaseapp.com"
                   database-url="https://nom-noms-ninja.firebaseio.com"
                   api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></firebase-app>
     <firebase-auth id="auth" user="{{user}}" provider="google"></firebase-auth>
-    <firebase-document path="/users/{{user.uid}}/locations/{{locationId}}" data="{{locationData}}"></firebase-document>
+    <firebase-document path="/users/[[user.uid]]/locations/[[locationId]]" data="[[locationData]]"></firebase-document>
     <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
     <div id="content">
       <button label="login" on-click="loginr">redirect login</button>
       <input id="input" class="controls" type="text" placeholder="Search Box">
       <div id="gmap"></div>
     </div>
+    <paper-dialog id="dialog">
+      <h2>[[locationName]]</h2>
+      <p>
+        Tags
+        <paper-icon-button id="bar" icon="maps:local-bar" toggles></paper-icon-button>
+        <paper-icon-button id="cafe" icon="maps:local-cafe" toggles></paper-icon-button>
+        <paper-icon-button id="restaurant" icon="maps:local-dining" toggles></paper-icon-button>
+      </p>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus on-click="addPlace">Add</paper-button>
+      </div>
+    </paper-dialog>
   </template>
   <script>
     /* global Polymer */
@@ -66,6 +88,7 @@
           type: Array,
           value: function() { return []; },
         },
+        tmpLocationData: Object,
       },
 
       loginr: function() {
@@ -78,6 +101,19 @@
               // unsuccessful authentication response here
               console.log(error);
             });
+      },
+      
+      addPlace: function() {
+        this.locationId = this.tmpLocationData.place_id;
+        var tags = {};
+        if (this.$.bar.active) tags.bar = 'bar';
+        if (this.$.cafe.active) tags.cafe = 'cafe';
+        if (this.$.restaurant.active) tags.restaurant = 'restaurant';
+        this.locationData = {
+          name: this.tmpLocationData.name,
+          pos: this.tmpLocationData.position,
+          tags: tags,
+        };
       },
 
       // Set up the map
@@ -117,10 +153,6 @@
             } else {
               bounds.extend(result.geometry.location);
             }
-            // create info window for marker
-            var infoWindow = new this.$.gmaps.api.InfoWindow({
-              content: result.name,
-            });
             // create marker
             var marker = new this.$.gmaps.api.Marker({
               position: {lat: result.geometry.location.lat(), lng: result.geometry.location.lng()},
@@ -128,14 +160,15 @@
               title: result.name,
               animation: this.$.gmaps.api.Animation.DROP,
             });
-            // open infoWindow on marker click
+            // open dialog on marker click
             var listener = marker.addListener('click', function() {
-              infoWindow.open(this.map, marker);
-              this.locationId = result.place_id;
-              this.locationData = {
+              this.tmpLocationData = {
+                place_id: result.place_id,
                 name: result.name,
-                pos: {lat: result.geometry.location.lat(), lng: result.geometry.location.lng()},
+                position: {lat: result.geometry.location.lat(), lng: result.geometry.location.lng()},
               };
+              this.locationName = result.name;
+              this.$.dialog.open();
             }.bind(this));
             this.markerListeners.push(listener);
             // return marker (adding it to collection)
