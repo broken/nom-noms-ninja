@@ -20,6 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="nom-noms-icons.html">
 
 <dom-module id="nom-noms">
@@ -62,9 +63,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     </style>
-    <firebase-app auth-domain="nom-noms-ninja.firebaseapp.com"
+    <firebase-app app="{{firebase}}"
+                  auth-domain="nom-noms-ninja.firebaseapp.com"
                   database-url="https://nom-noms-ninja.firebaseio.com"
                   api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></firebase-app>
+    <firebase-auth id="auth" user="{{user}}" provider="google" signed-in="{{signedIn}}"></firebase-auth>
 
     <app-location route="{{route}}"></app-location>
     <app-route
@@ -93,14 +96,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div main-title>Nom Noms Ninja</div>
+            <button label="login" on-click="login" disabled$="[[signedIn]]">redirect login</button>
           </app-toolbar>
         </app-header>
 
         <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="404" role="main">
-          <nom-noms-add-meal name="add-meal"></nom-noms-add-meal>
-          <nom-noms-view-meals name="view-meals"></nom-noms-view-meals>
-          <nom-noms-add-place name="add-place"></nom-noms-add-place>
-          <nom-noms-search-places name="search-places"></nom-noms-search-places>
+          <nom-noms-add-meal name="add-meal" firebase="[[firebase]]" user="[[user]]"></nom-noms-add-meal>
+          <nom-noms-view-meals name="view-meals" user="[[user]]"></nom-noms-view-meals>
+          <nom-noms-add-place name="add-place" user="[[user]]"></nom-noms-add-place>
+          <nom-noms-search-places name="search-places" user="[[user]]"></nom-noms-search-places>
           <nom-noms-404 name="404"></nom-noms-404>
         </iron-pages>
 
@@ -117,7 +121,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'nom-noms',
 
       properties: {
-
+        user: Object,
+        signedIn: Boolean,
         page: {
           type: String,
           reflectToAttribute: true,
@@ -129,6 +134,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       observers: [
         '_routePageChanged(routeData.page)'
       ],
+
+      login: function() {
+        this.$.auth.signInWithRedirect()
+            .then(function(response) {
+              // optionally handle a successful login
+              console.log(response);
+            })
+            .catch(function(error) {
+              // unsuccessful authentication response here
+              console.log(error);
+            });
+      },
 
       _routePageChanged: function(page) {
         this.page = page || 'add-meal';

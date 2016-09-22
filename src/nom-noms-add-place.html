@@ -3,7 +3,6 @@
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="shared-styles.html">
 
@@ -47,11 +46,9 @@
         color: blueviolet;
       }
     </style>
-    <firebase-auth id="auth" user="{{user}}" provider="google"></firebase-auth>
     <firebase-document path="/users/[[user.uid]]/locations/[[locationId]]" data="[[locationData]]"></firebase-document>
     <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
     <div id="content">
-      <button label="login" on-click="loginr">redirect login</button>
       <input id="input" class="controls" type="text" placeholder="Search Box">
       <div id="gmap"></div>
     </div>
@@ -85,18 +82,6 @@
           value: function() { return []; },
         },
         tmpLocationData: Object,
-      },
-
-      loginr: function() {
-        this.$.auth.signInWithRedirect()
-            .then(function(response) {
-              // optionally handle a successful login
-              console.log(response);
-            })
-            .catch(function(error) {
-              // unsuccessful authentication response here
-              console.log(error);
-            });
       },
       
       addPlace: function() {

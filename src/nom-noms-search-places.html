@@ -3,7 +3,6 @@
 <link rel="import" href="../bower_components/google-map/google-map-marker.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="shared-styles.html">
 
@@ -20,10 +19,8 @@
         background-color: grey;
       }
     </style>
-    <firebase-auth id="auth" user="{{user}}" provider="google"></firebase-auth>
     <firebase-query id="query" path="/users/[[user.uid]]/locations" data="{{locations}}"></firebase-query>
     <div id="content">
-      <button label="login" on-click="login">redirect login</button>
       <google-map map="{{map}}" latitude="34.0223405" longitude="-118.4377895" zoom="14"
                   api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" single-info-window>
         <template is="dom-repeat" items="[[locations]]" as="location">
@@ -46,18 +43,6 @@
         map: Object,
         user: Object,
         locations: Object,
-      },
-
-      login: function() {
-        this.$.auth.signInWithRedirect()
-            .then(function(response) {
-              // optionally handle a successful login
-              console.log(response);
-            })
-            .catch(function(error) {
-              // unsuccessful authentication response here
-              console.log(error);
-            });
       },
       
       _iconForTag: function(tag) {
