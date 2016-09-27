@@ -59,6 +59,7 @@
         <paper-icon-button id="bar" icon="maps:local-bar" toggles></paper-icon-button>
         <paper-icon-button id="cafe" icon="maps:local-cafe" toggles></paper-icon-button>
         <paper-icon-button id="restaurant" icon="maps:local-dining" toggles></paper-icon-button>
+        <paper-icon-button id="beenhere" icon="maps:beenhere" toggles></paper-icon-button>
       </p>
       <div class="buttons">
         <paper-button dialog-dismiss>Cancel</paper-button>
@@ -90,6 +91,7 @@
         if (this.$.bar.active) tags.bar = 'bar';
         if (this.$.cafe.active) tags.cafe = 'cafe';
         if (this.$.restaurant.active) tags.restaurant = 'restaurant';
+        if (this.$.beenhere.active) tags.beenhere = 'beenhere';
         this.locationData = {
           name: this.tmpLocationData.name,
           pos: this.tmpLocationData.position,

@@ -1,44 +1,97 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="nom-noms-add-meal">
-
   <template>
-
     <style include="shared-styles">
       :host {
         display: block;
-        padding: 10px;
+        height: calc(100vh - 64px);
+      }
+      #content {
+        height: 100%;
+        color: black;
+        background-color: grey;
+      }
+      google-map {
+        height: 300px;
       }
     </style>
-
-    <div class="card">
-      <div class="circle">1</div>
-      <h1>View One</h1>
-      <p>Ut labores minimum atomorum pro. Laudem tibique ut has.
-      <p>Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Cu mei vide viris gloriatur, at populo eripuit sit.</p>
+    <firebase-document path="/users/[[user.uid]]/meals/[[mealId]]" data="[[mealData]]"></firebase-document>
+    <div class="content">
+      <paper-input value="{{title}}" label="title"></paper-input>
+      <paper-textarea value="{{notes}}" label="notes"></paper-textarea>
+      <input label="upload photo" type="file" placeholder="photo upload" on-change="setPhotos"></input>
+      <div>
+        <paper-button raised on-click="cancel">Cancel</paper-button>
+        <paper-button raised on-click="save">Save</paper-button>
+      </div>
+      
+      <google-map map="{{map}}" latitude="34.0223405" longitude="-118.4377895" zoom="17"
+                  api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" single-info-window>
     </div>
-
+    <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
   </template>
-
   <script>
-
+    /* global Polymer */
     Polymer({
-
-      is: 'nom-noms-add-meal'
-
+      is: 'nom-noms-add-meal',
+      properties: {
+        firebase: Object,
+        user: Object,
+        title: String,
+        notes: String,
+        photos: {
+          type: Array,
+          value: function() { return []; },
+        },
+      },
+      
+      apiLoaded: function() {
+        var request = {
+          location: {
+            lat: 34.0288001,
+            lng: -118.44267430000002
+          },
+          rankBy: this.$.gmaps.api.places.RankBy.DISTANCE,
+          types: ['restaurant', 'bar', 'cafe'],  // deprecated
+        };
+        var service = new this.$.gmaps.api.places.PlacesService(this.map);
+        service.nearbySearch(request, function(results, status) {
+          console.log(status);
+          console.log(results);
+        });
+      },
+      
+      setPhotos: function(e, detail, sender) {
+        var files = e.target.files;
+        for (var i = 0;  i < files.length; ++i) {
+          this.photos.push(files[i]);
+        }
+      },
+      
+      cancel: function() {
+        this.title = '';
+        this.notes = '';
+      },
+      
+      save: function() {
+        this.mealId = 'new';
+        this.mealData = {
+          title: this.title,
+          notes: this.notes,
+        };
+        for (var i = 0; i < this.photos.length; ++i) {
+          var ref = this.firebase.storage().ref('/users/' + this.user.uid + '/meal/' + this.mealId + '/' + this.photos[i].name);
+          ref.put(this.photos[i]);
+        }
+      },
     });
-
   </script>
-
 </dom-module>
