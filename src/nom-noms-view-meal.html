@@ -1,8 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="shared-styles.html">
 
-<dom-module id="nom-noms-view-meals">
+<dom-module id="nom-noms-view-meal">
   <template>
     <style include="shared-styles">
       :host {
@@ -10,19 +9,17 @@
         padding: 10px;
       }
     </style>
-    <firebase-query id="query" path="/users/[[user.uid]]/meals" data="{{meals}}"></firebase-query>
-    <template is="dom-repeat" items="{{meals}}" as="meal">
       <div class="card">
         <div>Title: <span>[[meal.title]]</span></div>
+        <div>[[meal.notes]]</div>
       </div>
-    </template>
   </template>
   <script>
     /* global Polymer */
     Polymer({
-      is: 'nom-noms-view-meals',
+      is: 'nom-noms-view-meal',
       properties: {
-        user: Object,
+        meal: Object,
       },
     });
   </script>
