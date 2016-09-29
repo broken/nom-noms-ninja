@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="shared-styles.html">
 
@@ -12,7 +13,7 @@
     </style>
     <firebase-query id="query" path="/users/[[user.uid]]/meals" data="{{meals}}"></firebase-query>
     <template is="dom-repeat" items="{{meals}}" as="meal">
-      <div class="card">
+      <div class="card" on-click="_onClick">
         <div>Title: <span>[[meal.title]]</span></div>
       </div>
     </template>
@@ -21,8 +22,16 @@
     /* global Polymer */
     Polymer({
       is: 'nom-noms-view-meals-list',
+      behaviors: [
+        Polymer.NeonAnimatableBehavior,
+      ],
       properties: {
         user: Object,
+      },
+      _onClick: function(event) {
+        this.fire('item-click', {
+          meal: event.model.meal,
+        });
       },
     });
   </script>

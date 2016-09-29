@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="nom-noms-view-meal">
@@ -18,6 +19,9 @@
     /* global Polymer */
     Polymer({
       is: 'nom-noms-view-meal',
+      behaviors: [
+        Polymer.NeonAnimatableBehavior,
+      ],
       properties: {
         meal: Object,
       },
