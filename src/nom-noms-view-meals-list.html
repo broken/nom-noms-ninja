@@ -27,9 +27,10 @@
       ],
       properties: {
         user: Object,
+        meals: Array,
       },
       _onClick: function(event) {
-        this.fire('item-click', {
+        this.fire('post-click', {
           meal: event.model.meal,
         });
       },

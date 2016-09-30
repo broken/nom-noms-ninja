@@ -1,8 +1,9 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/neon-animation/neon-animated-pages.html">
-<link rel="import" href="shared-styles.html">
 <link rel="import" href="nom-noms-view-meal.html">
 <link rel="import" href="nom-noms-view-meals-list.html">
+<link rel="import" href="shared-styles.html">
 
 <dom-module id="nom-noms-view-meals">
   <template>
@@ -15,9 +16,17 @@
         height: 100%;
       }
     </style>
-    <neon-animated-pages id="pages" selected="0">
-      <nom-noms-view-meals-list name="view-meals-list" user="[[user]]" on-item-click="_onItemClick"></nom-noms-view-meals-list>
-      <nom-noms-view-meal name="view-meal" meal="[[meal]]"></nom-noms-view-meal>
+    <app-route
+        route="{{route}}"
+        pattern="/:postId"
+        data="{{routeData}}"
+        active="{{isPostActive}}"></app-route>
+    <app-route
+        route="{{route}}"
+        tail="{{subroute}}"></app-route>
+    <neon-animated-pages id="pages" selected="[[_selectPage(isPostActive)]]">
+      <nom-noms-view-meals-list name="view-meals-list" user="[[user]]" on-post-click="_onPostClick"></nom-noms-view-meals-list>
+      <nom-noms-view-meal name="view-meal" user="[[user]]" meal="[[meal]]" on-close="_onPostClose"></nom-noms-view-meal>
     </neon-animated-pages>
   </template>
   <script>
@@ -26,10 +35,25 @@
       is: 'nom-noms-view-meals',
       properties: {
         user: Object,
+        routeData: Object,
+        route: {
+          type: Object,
+          notify: true,
+        },
+        subroute: Object,
+        meal: Object,
       },
-      _onItemClick: function(e) {
+      _selectPage: function(isPostActive) {
+        return isPostActive ? 1 : 0;
+      },
+      _onPostClick: function(e) {
         this.meal = e.detail.meal;
-        this.$.pages.selected = 1;
+        this.set('route.path', '/' + this.meal.$key);
+      },
+      _onPostClose: function() {
+        // inactive routes do not pick up changes to the routeDate
+        // https://github.com/PolymerElements/app-route/issues/75
+        this.set('route.path', '');
       },
     });
   </script>
