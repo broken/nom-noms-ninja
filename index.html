@@ -91,21 +91,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       }
     </script>
-
-    <link rel="import" href="/src/nom-noms.html">
-
     <style>
       body {
         margin: 0;
-        font-family: 'Roboto', 'Noto', sans-serif;
-        line-height: 1.5;
         min-height: 100vh;
-        background-color: #eeeeee;
       }
+      @import url("https://fonts.googleapis.com/css?family=Open+Sans:300|Source+Sans+Pro:300");
+      html { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; font-size: 16px; }
+      
+      html, body { margin: 0px; padding: 0px; min-height: 100%; color: #e0c453; background-color: #2b2b2b; font-family: 'Source Sans Pro', sans-serif; font-weight: 300; }
+      
+      section { padding: 40px 0px; }
+      section[hero] { background-color: #333332; }
+      
+      h1, h2, h3, h4, h5, h6 { font-weight: 300; margin: 0px; padding: 0px; line-height: 1em; }
+      
+      h1, h3, h5 { font-family: 'Open Sans', sans-serif; }
+      
+      h1 { font-size: 50px; margin: 30px 0px; }
+      
+      h2 { color: white; font-size: 35px; margin: 20px 0px; }
+      
+      h3 { font-size: 25px; margin: 15px 0px; }
+      
+      h4 { font-size: 20px; }
+      
+      a, a:active, a:visited, a:focus { color: white; text-decoration: none; }
+      
+      a:hover { color: white; text-decoration: underline; }
     </style>
+    <link rel="import" href="/src/nom-noms.html">
+
   </head>
   <body>
     <nom-noms></nom-noms>
-    <!-- Built with love using Polymer Starter Kit -->
   </body>
 </html>
