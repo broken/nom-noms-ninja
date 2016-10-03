@@ -36,6 +36,9 @@
       .drawer-list a.subroute {
         padding-left: 32px;
       }
+      iron-pages {
+        padding: 5%;
+      }
     </style>
     <firebase-app app="{{firebase}}"
                   auth-domain="nom-noms-ninja.firebaseapp.com"
@@ -70,7 +73,7 @@
           </paper-toolbar>
         </app-header>
         <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="404" role="main">
-          <nom-noms-add-meal name="add-meal" firebase="[[firebase]]" user="[[user]]"></nom-noms-add-meal>
+          <nom-noms-add-meal name="add-meal" firebase="[[firebase]]" user="[[user]]" route="[[route]]"></nom-noms-add-meal>
           <nom-noms-view-meals name="view-meals" user="[[user]]" route="{{subroute}}" firebase="[[firebase]]"></nom-noms-view-meals>
           <nom-noms-add-place name="add-place" user="[[user]]"></nom-noms-add-place>
           <nom-noms-search-places name="search-places" firebase="[[firebase]]" user="[[user]]"></nom-noms-search-places>

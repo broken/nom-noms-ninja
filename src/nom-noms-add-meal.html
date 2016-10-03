@@ -1,9 +1,17 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/file-input/file-input.html">
 <link rel="import" href="../bower_components/google-apis/google-maps-api.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/l2t-paper-slider/l2t-paper-slider.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-document.html">
 <link rel="import" href="shared-styles.html">
 
@@ -14,29 +22,59 @@
         display: block;
         height: calc(100vh - 64px);
       }
-      #content {
+      l2t-paper-slider {
+        --paper-slide-height: 20vh;
+      }
+      #addPhotoIcon {
+        --iron-icon-height: 64px;
+        --iron-icon-width: 64px;
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 20px;
+      }
+      paper-slide {
+        background-color: var(--paper-menu-background-color);
+      }
+      paper-slide img {
         height: 100%;
-        color: black;
-        background-color: grey;
+        width: 100%;
+        object-fit: contain;
       }
       google-map {
-        height: 300px;
+       /* display: none; */
       }
     </style>
+    <app-route
+        route="[[route]]"
+        pattern="/add-meal"
+        active="{{isActive}}"></app-route>
     <firebase-document path="/users/[[user.uid]]/meals/[[mealId]]" data="[[mealData]]"></firebase-document>
-    <div class="content">
-      <paper-input value="{{title}}" label="title"></paper-input>
-      <paper-textarea value="{{notes}}" label="notes"></paper-textarea>
-      <input label="upload photo" type="file" placeholder="photo upload" on-change="setPhotos"></input>
-      <div>
-        <paper-button raised on-click="cancel">Cancel</paper-button>
-        <paper-button raised on-click="save">Save</paper-button>
-      </div>
-      
-      <google-map map="{{map}}" latitude="34.0223405" longitude="-118.4377895" zoom="17"
-                  api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" single-info-window>
+    <l2t-paper-slider total-slides="1" id="slider">
+      <paper-slide>
+        <iron-icon icon="image:add-a-photo" id="addPhotoIcon"></iron-icon>
+        <file-input accept="image/*" camera invalidText="[[_invalidFileInputText]]" on-change="_addPhoto"></file-input>
+      </paper-slide>
+    </l2t-paper-slider>
+    <paper-dropdown-menu label="Location">
+      <paper-listbox class="dropdown-content" id="locationListbox">
+        <template is="dom-repeat" items="[[locations]]" as="location">
+          <paper-item>[[location.name]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+    <paper-input value="{{title}}" label="title"></paper-input>
+    <paper-textarea value="{{notes}}" label="notes"></paper-textarea>
+    <div>
+      <paper-button raised on-click="cancel" class="warning">Cancel</paper-button>
+      <paper-button raised on-click="save" class="success">Save</paper-button>
     </div>
-    <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" on-api-load="apiLoaded"></google-maps-api>
+    <google-map map="{{map}}" latitude="[[position.lat]]" longitude="[[position.lng]]" zoom="17"
+                api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig" single-info-window>
+    </div>
+    <google-maps-api id="gmaps" api-key="AIzaSyAXueZvxTcV2xKak2agC6t9PXqyph_o_ig"></google-maps-api>
   </template>
   <script>
     /* global Polymer */
@@ -45,20 +83,50 @@
       properties: {
         firebase: Object,
         user: Object,
+        mealId: String,
+        mealData: Object,
         title: String,
         notes: String,
         photos: {
           type: Array,
           value: function() { return []; },
         },
+        isActive: {
+          type: Boolean,
+          observer: '_isActiveChanged',
+        },
+        position: {
+          type: Object,
+          observer: '_positionChanged',
+        },
+        locations: Array,
       },
       
-      apiLoaded: function() {
+      ready: function() {
+        this._getCurrentPosition();
+      },
+      
+      _isActiveChanged: function() {
+      },
+      
+      _getCurrentPosition: function() {
+        if (!this.isActive) return;
+        window.console.log('add meal active');
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            this.position = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            this.map.setCenter(this.position);
+          }.bind(this));
+        }
+      },
+      
+      _positionChanged: function() {
+        // todo verify that maps api is loaded
         var request = {
-          location: {
-            lat: 34.0288001,
-            lng: -118.44267430000002
-          },
+          location: this.position,
           rankBy: this.$.gmaps.api.places.RankBy.DISTANCE,
           types: ['restaurant', 'bar', 'cafe'],  // deprecated
         };
@@ -66,32 +134,65 @@
         service.nearbySearch(request, function(results, status) {
           console.log(status);
           console.log(results);
-        });
-      },
-      
-      setPhotos: function(e, detail, sender) {
-        var files = e.target.files;
-        for (var i = 0;  i < files.length; ++i) {
-          this.photos.push(files[i]);
-        }
+          this.locations = results;
+          this.$.locationListbox.selected = 0;
+        }.bind(this));
       },
       
       cancel: function() {
         this.title = '';
         this.notes = '';
+        this.photos = [];
+        this.$.slider.movePos(0);
+        for (var i = this.$.slider.totalSlides; i > 1; --i) {
+          var node = Polymer.dom(this.$.slider).lastElementChild;
+          Polymer.dom(this.$.slider).removeChild(node);
+          --this.$.slider.totalSlides;
+        }
       },
       
       save: function() {
-        this.mealId = 'new';
+        this.mealId = (new Date()).getTime();
         this.mealData = {
           title: this.title,
           notes: this.notes,
+          datetime: this.mealId,
+          placeId: this.locations[this.$.locationListbox.selected].place_id,
+          pics: {},
         };
         for (var i = 0; i < this.photos.length; ++i) {
           var ref = this.firebase.storage().ref('/users/' + this.user.uid + '/meal/' + this.mealId + '/' + this.photos[i].name);
           ref.put(this.photos[i]);
+          this.mealData.pics[i] = this.photos[i].name;
         }
       },
+      
+      _addPhotoSlide: function(pic) {
+        var node = document.createElement('paper-slide');
+        var img = document.createElement('img');
+        Polymer.dom(node).appendChild(img);
+        var reader = new FileReader();
+        reader.onload = function (e) { img.src = e.target.result; };
+        reader.readAsDataURL(pic);
+        Polymer.dom(this.$.slider).appendChild(node);
+        ++this.$.slider.totalSlides;
+      },
+      
+      _addPhoto: function(e) {
+        var valid = event.detail.valid,
+            invalid = event.detail.invalid;
+        if (valid.length) {
+          var validFiles = valid.map(function(file) {
+            this.photos.push(file);
+            this._addPhotoSlide(file);
+            return {
+              name: file.name,
+              size: file.size
+            };
+          }.bind(this));
+        }
+      },
+      
     });
   </script>
 </dom-module>
