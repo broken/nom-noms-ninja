@@ -44,7 +44,7 @@
         object-fit: contain;
       }
       google-map {
-       /* display: none; */
+        display: none;
       }
     </style>
     <app-route
@@ -158,10 +158,11 @@
           notes: this.notes,
           datetime: this.mealId,
           placeId: this.locations[this.$.locationListbox.selected].place_id,
+          placeName: this.locations[this.$.locationListbox.selected].name,
           pics: {},
         };
         for (var i = 0; i < this.photos.length; ++i) {
-          var ref = this.firebase.storage().ref('/users/' + this.user.uid + '/meal/' + this.mealId + '/' + this.photos[i].name);
+          var ref = this.firebase.storage().ref('/users/' + this.user.uid + '/meals/' + this.mealId + '/' + this.photos[i].name);
           ref.put(this.photos[i]);
           this.mealData.pics[i] = this.photos[i].name;
         }
