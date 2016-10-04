@@ -6,15 +6,26 @@
 <dom-module id="nom-noms-view-meals-list">
   <template>
     <style include="shared-styles">
-      :host {
-        display: block;
+      .card {
         padding: 10px;
+        display: flex;
+        background-color: var(--paper-menu-background-color);
+      }
+      .card img {
+        height: 100%;
+        width: 40%;
+        object-fit: contain;
+        margin-right: 10px;
       }
     </style>
     <firebase-query id="query" path="/users/[[user.uid]]/meals" data="{{meals}}"></firebase-query>
-    <template is="dom-repeat" items="{{meals}}" as="meal">
+    <template is="dom-repeat" items="[[meals]]" as="meal">
       <div class="card" on-click="_onClick">
-        <div>Title: <span>[[meal.title]]</span></div>
+        <img src="[[meal._pic]]">
+        <div>
+          <h4>[[meal.title]]</h4>
+          <p>[[meal.placeName]]</p>
+        </div>
       </div>
     </template>
   </template>
@@ -29,10 +40,26 @@
         user: Object,
         meals: Array,
       },
+      observers: [
+        '_updateImages(meals.splices)',
+      ],
       _onClick: function(event) {
         this.fire('post-click', {
           meal: event.model.meal,
         });
+      },
+      _updateImages: function(mealSplice) {
+        window.console.log(this.meals);
+        if (!this.meals) return;
+        for (var i = 0; i < this.meals.length; ++i) {
+          if (!this.meals[i].pics.length) continue;
+          var ref = this.firebase.storage().ref('/users/' + this.user.uid + '/meals/' + this.meals[i].$key + '/pics/' + this.meals[i].pics[0]);
+          ref.getDownloadURL().then(function(idx, url) {
+            this.set('meals.' + idx + '._pic',  url);
+          }.bind(this, i)).catch(function(error) {
+            window.console.log(error);
+          });
+        }
       },
     });
   </script>

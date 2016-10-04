@@ -96,7 +96,7 @@
         drawerOpened: Boolean,
       },
       observers: [
-        '_routePageChanged(routeData.page)'
+        '_routePageChanged(routeData.page)',
       ],
       login: function() {
         this.$.auth.signInWithRedirect()

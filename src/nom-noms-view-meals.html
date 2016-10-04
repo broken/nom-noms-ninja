@@ -25,8 +25,8 @@
         route="{{route}}"
         tail="{{subroute}}"></app-route>
     <neon-animated-pages id="pages" selected="[[_selectPage(isPostActive)]]">
-      <nom-noms-view-meals-list name="view-meals-list" user="[[user]]" on-post-click="_onPostClick"></nom-noms-view-meals-list>
-      <nom-noms-view-meal name="view-meal" user="[[user]]" meal="[[meal]]" on-close="_onPostClose"></nom-noms-view-meal>
+      <nom-noms-view-meals-list name="view-meals-list" user="[[user]]" firebase="[[firebase]]" on-post-click="_onPostClick"></nom-noms-view-meals-list>
+      <nom-noms-view-meal name="view-meal" user="[[user]]" meal="[[meal]]" firebase="[[firebase]]" on-close="_onPostClose"></nom-noms-view-meal>
     </neon-animated-pages>
   </template>
   <script>
@@ -34,6 +34,7 @@
     Polymer({
       is: 'nom-noms-view-meals',
       properties: {
+        firebase: Object,
         user: Object,
         routeData: Object,
         route: {
