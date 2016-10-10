@@ -3,6 +3,8 @@
 <link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/l2t-paper-slider/l2t-paper-slider.html">
+<link rel="import" href="../bower_components/marked-element/marked-element.html">
 <link rel="import" href="../bower_components/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="shared-styles.html">
@@ -10,6 +12,20 @@
 <dom-module id="nom-noms-view-meal">
   <template>
     <style include="shared-styles">
+      l2t-paper-slider {
+        --paper-slide-height: 20vh;
+      }
+      paper-slide {
+        background-color: var(--paper-menu-background-color);
+      }
+      paper-slide img {
+        height: 100%;
+        width: 100%;
+        object-fit: contain;
+      }
+      .jright {
+        text-align: right;
+      }
     </style>
     <app-header-layout fullbleed>
       <app-header fixed>
@@ -18,9 +34,17 @@
           <div main-title>My meal</div>
         </app-toolbar>
       </app-header>
-      <div class="card">
-        <div>Title: <span>[[meal.title]]</span></div>
-        <div>[[meal.notes]]</div>
+      <div>
+        <h2>[[meal.title]]</h2>
+        <h4 class="jright">at <span>[[meal.placeName]]</span></h4>
+        <l2t-paper-slider total-slides="[[pics.length]]" id="slider">
+          <template is="dom-repeat" items="[[pics]]" as="url">
+            <paper-slide>
+              <img src="[[url]]">
+            </paper-slide>
+          </template>
+        </l2t-paper-slider>
+        <marked-element markdown="[[meal.notes]]"></marked-element>
       </div>
     </app-header-layout>
   </template>
@@ -32,11 +56,26 @@
         Polymer.NeonAnimatableBehavior,
       ],
       properties: {
+        firebase: Object,
         user: Object,
         meal: Object,
+        pics: {
+          type: Array,
+          computed: '_setPics(meal)',
+        },
       },
       _close: function(event) {
         this.fire('close');
+      },
+      _setPics: function(meal) {
+        if (!meal || !meal.pics) return [];
+        for (var i = 0; i < meal.pics.length; ++i) {
+          var ref = this.firebase.storage().ref('/users/' + this.user.uid + '/meals/' + this.meal.$key + '/pics/' + meal.pics[i]);
+          ref.getDownloadURL().then(function(idx, url) {
+            this.push('pics', url);
+          }.bind(this, i));
+        }
+        return [];
       },
     });
   </script>
